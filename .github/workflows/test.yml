@@ -1,0 +1,68 @@
+name: Posting Alerts
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # Runs every hour (UTC)
+  workflow_dispatch:       # Manual trigger
+
+jobs:
+  run-alerts:
+    runs-on: ubuntu-latest
+
+    steps:
+    # -----------------------------
+    # 1. Checkout Repository
+    # -----------------------------
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # -----------------------------
+    # 2. Cache Python dependencies
+    # -----------------------------
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-python-
+
+    # -----------------------------
+    # 3. Set up Python
+    # -----------------------------
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    # -----------------------------
+    # 4. Install Dependencies
+    # -----------------------------
+    - name: Install dependencies
+      run: |
+        cd Alerts
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # -----------------------------
+    # 5. Run Posting Alerts Script
+    # -----------------------------
+    - name: Run Posting Alerts Script
+      env:
+        LOCAL_MONGO_URI: ${{ secrets.LOCAL_MONGO_URI }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        CHAT_IDS_JSON: ${{ secrets.CHAT_IDS_JSON }}
+      run: |
+        cd Alerts
+        python test.py
+
+    # -----------------------------
+    # 6. Debug Info on Failure
+    # -----------------------------
+    - name: Debug Info (on failure)
+      if: failure()
+      run: |
+        echo "=== Directory Tree ==="
+        ls -R .
+        echo "=== Python Version ==="
+        python --version
