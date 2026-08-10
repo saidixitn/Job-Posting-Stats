@@ -4,9 +4,9 @@ from pymongo import MongoClient
 import requests
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 
-# ============================================================
+# =============================================================
 # CONFIG
-# ============================================================
+# =============================================================
 LOCAL_MONGO_URI = os.getenv("LOCAL_MONGO_URI", "mongodb://localhost:27017/")
 BOT = os.getenv("TELEGRAM_BOT_TOKEN", "")
 MAX_WORKERS = 9
